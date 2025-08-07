@@ -23,6 +23,7 @@ jobs:
         echo "ACR_USERNAME=$(terraform output -raw acr_admin_username)" >> $GITHUB_ENV
         echo "ACR_PASSWORD=$(terraform output -raw acr_admin_password)" >> $GITHUB_ENV
 
+
     
     - name: Build and Push Docker image
       run: |

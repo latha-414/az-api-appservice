@@ -1,0 +1,31 @@
+name: Deploy to App Service
+
+on:
+  workflow_run:
+    workflows: ["Build and Push to ACR"]
+    types: [completed]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
+    - name: Get App Service details
+      run: |
+        cd terraform
+        echo "APP_NAME=$(terraform output -raw app_service_name)" >> $GITHUB_ENV
+        echo "ACR_SERVER=$(terraform output -raw acr_login_server)" >> $GITHUB_ENV
+    
+    - name: Deploy to App Service
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ env.APP_NAME }}
+        images: ${{ env.ACR_SERVER }}/myapp:latest

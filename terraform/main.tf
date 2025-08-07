@@ -5,7 +5,7 @@ provider "azurerm" {
 # Resource Group
 resource "azurerm_resource_group" "main" {
   name     = "rg-policytest-dev"
-  location = "Central India"
+  location = "East US"
   
   tags = {
     Environment = "dev"
@@ -33,7 +33,7 @@ resource "azurerm_service_plan" "main" {
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
   os_type             = "Linux"
-  sku_name            = "F1"
+  sku_name            = "B1"
   
   tags = {
     Environment = "dev"
@@ -41,7 +41,7 @@ resource "azurerm_service_plan" "main" {
   }
 }
 
-# App Service
+# App Service - FIXED VERSION
 resource "azurerm_linux_web_app" "main" {
   name                = "app-policytest-${random_string.suffix.result}"
   resource_group_name = azurerm_resource_group.main.name
@@ -50,9 +50,13 @@ resource "azurerm_linux_web_app" "main" {
   https_only          = true
   
   site_config {
+    # Remove always_on - it's not supported in B1 by default
+    
+    # NEW SYNTAX for Docker (not deprecated)
     application_stack {
-      docker_image     = "${azurerm_container_registry.main.login_server}/myapp"
-      docker_image_tag = "latest"
+      docker_registry_url = "https://${azurerm_container_registry.main.login_server}"
+      docker_image_name   = "myapp"
+      docker_image_tag    = "latest"
     }
   }
   
@@ -60,6 +64,7 @@ resource "azurerm_linux_web_app" "main" {
     "DOCKER_REGISTRY_SERVER_URL"      = "https://${azurerm_container_registry.main.login_server}"
     "DOCKER_REGISTRY_SERVER_USERNAME" = azurerm_container_registry.main.admin_username
     "DOCKER_REGISTRY_SERVER_PASSWORD" = azurerm_container_registry.main.admin_password
+    "WEBSITES_ENABLE_APP_SERVICE_STORAGE" = "false"
   }
   
   tags = {

@@ -58,10 +58,9 @@ resource "azurerm_linux_web_app" "main" {
   https_only          = true
 
   site_config {
-    container_registry_use_managed_identity       = false
-    # Use container_image_name instead of deprecated docker_image
-    container_image_name = "${azurerm_container_registry.main.login_server}/myapp:latest"
-    container_image_tag  = "latest"  # Optional: can be omitted if in image name
+    application_stack {
+      docker_image = "${azurerm_container_registry.main.login_server}/myapp:latest"
+    }
   }
 
   app_settings = {

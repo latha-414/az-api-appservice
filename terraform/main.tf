@@ -13,7 +13,7 @@ resource "random_string" "suffix" {
 # Resource Group
 resource "azurerm_resource_group" "main" {
   name     = "rg-policytest-dev"
-  location = "East US"
+  location = "Central India"
 
   tags = {
     Environment = "dev"

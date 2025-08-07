@@ -59,7 +59,9 @@ resource "azurerm_linux_web_app" "main" {
 
   site_config {
     application_stack {
-      docker_image = "${azurerm_container_registry.main.login_server}/myapp:latest"
+      docker_image     = "${azurerm_container_registry.main.login_server}/myapp:latest"
+      docker_image_tag = "latest"
+      # No docker_registry_* here → use app_settings instead
     }
   }
 

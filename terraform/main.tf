@@ -49,6 +49,8 @@ resource "azurerm_linux_web_app" "main" {
   service_plan_id     = azurerm_service_plan.main.id
   https_only          = true
 
+  always_on           = false
+
   site_config {
     application_stack {
       docker_registry_url = "https://${azurerm_container_registry.main.login_server}"

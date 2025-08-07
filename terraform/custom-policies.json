@@ -1,0 +1,22 @@
+{
+  "policies": [
+    {
+      "name": "require-environment-tag",
+      "displayName": "Require Environment tag on resources",
+      "effect": "deny",
+      "description": "All resources must have Environment tag"
+    },
+    {
+      "name": "https-only-app-service",
+      "displayName": "App Service must use HTTPS only",
+      "effect": "deny",
+      "description": "App Services must be accessible only via HTTPS"
+    },
+    {
+      "name": "audit-acr-admin",
+      "displayName": "Audit ACR admin user",
+      "effect": "audit",
+      "description": "Audit if Container Registry has admin user enabled"
+    }
+  ]
+}

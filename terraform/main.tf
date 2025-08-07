@@ -33,7 +33,7 @@ resource "azurerm_service_plan" "main" {
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
   os_type             = "Linux"
-  sku_name            = "F1"
+  sku_name            = "B1"
   
   tags = {
     Environment = "dev"
@@ -49,7 +49,6 @@ resource "azurerm_linux_web_app" "main" {
   service_plan_id     = azurerm_service_plan.main.id
   https_only          = true
 
-  always_on           = false
 
   site_config {
     application_stack {

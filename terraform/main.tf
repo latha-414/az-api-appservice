@@ -55,7 +55,7 @@ resource "azurerm_linux_web_app" "main" {
     # NEW SYNTAX for Docker (not deprecated)
     application_stack {
       docker_registry_url = "https://${azurerm_container_registry.main.login_server}"
-      docker_image_name   = "myapp"
+      docker_image   = "myapp"
       docker_image_tag    = "latest"
     }
   }

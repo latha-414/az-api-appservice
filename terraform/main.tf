@@ -48,30 +48,27 @@ resource "azurerm_linux_web_app" "main" {
   location            = azurerm_resource_group.main.location
   service_plan_id     = azurerm_service_plan.main.id
   https_only          = true
-  
+
   site_config {
-    # Remove always_on - it's not supported in B1 by default
-    
-    # NEW SYNTAX for Docker (not deprecated)
     application_stack {
       docker_registry_url = "https://${azurerm_container_registry.main.login_server}"
-      docker_image   = "myapp"
-      docker_image_tag    = "latest"
+      docker_image_name   = "myapp:latest"
     }
   }
-  
+
   app_settings = {
     "DOCKER_REGISTRY_SERVER_URL"      = "https://${azurerm_container_registry.main.login_server}"
     "DOCKER_REGISTRY_SERVER_USERNAME" = azurerm_container_registry.main.admin_username
     "DOCKER_REGISTRY_SERVER_PASSWORD" = azurerm_container_registry.main.admin_password
     "WEBSITES_ENABLE_APP_SERVICE_STORAGE" = "false"
   }
-  
+
   tags = {
     Environment = "dev"
     Project     = "policytest"
   }
 }
+
 
 # Random string for unique naming
 resource "random_string" "suffix" {

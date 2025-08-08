@@ -147,7 +147,7 @@ resource "azurerm_resource_group_policy_assignment" "location_restriction_assign
 
 
 resource "azurerm_storage_account" "example" {
-  name                = "mystorageacct${random_string.suffix.result}"
+  name                = "myappstorageacct${random_string.suffix.result}"
   resource_group_name = azurerm_resource_group.main.name
   location            = "East US"
   account_tier        = "Standard"

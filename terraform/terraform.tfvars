@@ -2,3 +2,4 @@
 location     = "Central India"
 environment  = "dev"
 project_name = "policytest"
+allowed_locations = ["Central India", "East US"]

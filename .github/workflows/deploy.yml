@@ -1,13 +1,16 @@
 name: Deploy to App Service
 
 on:
+  workflow_dispatch:  # Manual trigger
   workflow_run:
-    workflows: ["Build and Push Docker Image to ACR"]  # Match your build.yml name
+    workflows: ["Build and Push Docker Image to ACR"]
     types: [completed]
+    branches: [main]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     
     steps:
     - name: Checkout code
@@ -18,20 +21,26 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     
-    - name: Get App Service and ACR details dynamically
+    - name: Get App Service and ACR details
       run: |
-        # Get App Service details (assuming you have one App Service in resource group)
-        APP_NAME=$(az webapp list --resource-group your-resource-group --query "[0].name" -o tsv)
-        ACR_LOGIN_SERVER=$(az acr list --resource-group your-resource-group --query "[0].loginServer" -o tsv)
+        # Get App Service and ACR details dynamically
+        APP_NAME=$(az webapp list --resource-group rg-policytest-dev --query "[0].name" -o tsv)
+        ACR_LOGIN_SERVER=$(az acr list --resource-group rg-policytest-dev --query "[0].loginServer" -o tsv)
         
+        # Export to environment
         echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
         echo "ACR_LOGIN_SERVER=$ACR_LOGIN_SERVER" >> $GITHUB_ENV
         
-        echo "Deploying to App Service: $APP_NAME"
-        echo "Using image from: $ACR_LOGIN_SERVER"
+        echo "🚀 Deploying to App Service: $APP_NAME"
+        echo "📦 Using image from: $ACR_LOGIN_SERVER"
     
     - name: Deploy to App Service
       uses: azure/webapps-deploy@v2
       with:
         app-name: ${{ env.APP_NAME }}
         images: ${{ env.ACR_LOGIN_SERVER }}/myapp:latest
+        
+    - name: Deployment Success
+      run: |
+        echo "✅ Successfully deployed to App Service: ${{ env.APP_NAME }}"
+        echo "🌐 Application URL: https://${{ env.APP_NAME }}.azurewebsites.net"

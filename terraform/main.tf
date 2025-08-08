@@ -117,6 +117,34 @@ resource "azurerm_storage_account" "fail_test" {
   }
 }
 
+resource "azurerm_policy_definition" "location_restriction" {
+  name         = "allowed-locations"
+  policy_type  = "Custom"
+  mode         = "All"
+  display_name = "Allowed Locations"
+  description  = "Restrict resource creation to specific locations"
+
+  policy_rule = <<POLICY
+{
+  "if": {
+    "not": {
+      "field": "location",
+      "in": ${jsonencode(var.allowed_locations)}
+    }
+  },
+  "then": {
+    "effect": "deny"
+  }
+}
+POLICY
+}
+
+resource "azurerm_policy_assignment" "location_restriction_assignment" {
+  name                 = "allowed-locations-assignment"
+  scope                = azurerm_resource_group.main.id
+  policy_definition_id = azurerm_policy_definition.location_restriction.id
+}
+
 resource "azurerm_storage_account" "example" {
   name                = "mystorageacct${random_string.suffix.result}"
   resource_group_name = azurerm_resource_group.main.name

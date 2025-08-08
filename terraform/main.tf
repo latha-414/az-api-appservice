@@ -112,6 +112,7 @@ resource "azurerm_storage_account" "fail_test" {
   account_replication_type = "LRS"
 
   tags = {
+    Environment = "dev"
     Project = "policytest"
   }
 }

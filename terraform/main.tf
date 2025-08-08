@@ -102,3 +102,16 @@ resource "azurerm_resource_group_policy_assignment" "require_tags" {
   resource_group_id    = azurerm_resource_group.main.id
   policy_definition_id = azurerm_policy_definition.require_tags.id
 }
+
+# Storage Account WITHOUT Environment tag
+resource "azurerm_storage_account" "fail_test" {
+  name                     = "stfailtest${random_string.suffix.result}"
+  resource_group_name      = azurerm_resource_group.main.name
+  location                 = azurerm_resource_group.main.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+
+  tags = {
+    Project = "policytest"
+  }
+}

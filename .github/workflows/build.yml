@@ -25,8 +25,8 @@ jobs:
     - name: Get ACR details and Build/Push
       run: |
         # Dynamically get ACR details (assuming you have one ACR in resource group)
-        ACR_NAME=$(az acr list --resource-group your-resource-group --query "[0].name" -o tsv)
-        ACR_LOGIN_SERVER=$(az acr list --resource-group your-resource-group --query "[0].loginServer" -o tsv)
+        ACR_NAME=$(az acr list --resource-group rg-policytest-dev --query "[0].name" -o tsv)
+        ACR_LOGIN_SERVER=$(az acr list --resource-group rg-policytest-dev --query "[0].loginServer" -o tsv)
         
         echo "Using ACR: $ACR_NAME"
         echo "Login Server: $ACR_LOGIN_SERVER"

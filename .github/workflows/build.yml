@@ -24,7 +24,7 @@ jobs:
         
     - name: Get ACR details and Build/Push
       run: |
-        # Dynamically get ACR details (assuming you have one ACR in resource group)
+        # Dynamically get ACR details
         ACR_NAME=$(az acr list --resource-group rg-policytest-dev --query "[0].name" -o tsv)
         ACR_LOGIN_SERVER=$(az acr list --resource-group rg-policytest-dev --query "[0].loginServer" -o tsv)
         
@@ -39,3 +39,5 @@ jobs:
         docker build -t $ACR_LOGIN_SERVER/myapp:latest .
         docker push $ACR_LOGIN_SERVER/myapp:${{ github.sha }}
         docker push $ACR_LOGIN_SERVER/myapp:latest
+        
+        echo "✅ Successfully built and pushed images"

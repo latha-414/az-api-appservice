@@ -33,6 +33,7 @@ jobs:
         
         # Login to ACR
         az acr login --name $ACR_NAME
+
         
         # Build and push
         docker build -t $ACR_LOGIN_SERVER/myapp:${{ github.sha }} .

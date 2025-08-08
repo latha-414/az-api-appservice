@@ -116,3 +116,39 @@ resource "azurerm_storage_account" "fail_test" {
     Project = "policytest"
   }
 }
+
+# Location Restriction Policy
+resource "azurerm_policy_definition" "location_restriction" {
+  name         = "allowed-locations"
+  policy_type  = "Custom"
+  mode         = "All"
+  display_name = "Allowed Locations"
+  description  = "Restrict resource creation to specific locations"
+
+  policy_rule = <<POLICY
+{
+  "if": {
+    "not": {
+      "field": "location",
+      "in": ${jsonencode(var.allowed_locations)}
+    }
+  },
+  "then": {
+    "effect": "deny"
+  }
+}
+POLICY
+}
+
+# Assign location policy to your subscription or resource group
+resource "azurerm_resource_group_policy_assignment" "location_restriction_assignment" {
+  name                 = "allowed-locations-assignment"
+  resource_group_id    = azurerm_resource_group.main.id
+  policy_definition_id = azurerm_policy_definition.location_restriction.id
+}
+
+# Test resource group in different location
+resource "azurerm_resource_group" "test" {
+  name     = "rg-test-policy"
+  location = "West Europe" # Should FAIL if not in allowed_locations
+}

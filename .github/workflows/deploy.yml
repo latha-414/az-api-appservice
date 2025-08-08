@@ -2,7 +2,7 @@ name: Deploy to App Service
 
 on:
   workflow_run:
-    workflows: ["Build and Push to ACR"]
+    workflows: ["Build and Push Docker Image to ACR"]  # Match your build.yml name
     types: [completed]
 
 jobs:
@@ -11,23 +11,28 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
     
     - name: Azure Login
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     
-    - name: Get App Service details
+    - name: Get App Service and ACR details dynamically
       run: |
-        cd terraform
-        echo "APP_NAME=$(terraform output -raw app_service_name)" >> $GITHUB_ENV
-        echo "ACR_SERVER=$(terraform output -raw acr_login_server)" >> $GITHUB_ENV
+        # Get App Service details (assuming you have one App Service in resource group)
+        APP_NAME=$(az webapp list --resource-group your-resource-group --query "[0].name" -o tsv)
+        ACR_LOGIN_SERVER=$(az acr list --resource-group your-resource-group --query "[0].loginServer" -o tsv)
+        
+        echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+        echo "ACR_LOGIN_SERVER=$ACR_LOGIN_SERVER" >> $GITHUB_ENV
+        
+        echo "Deploying to App Service: $APP_NAME"
+        echo "Using image from: $ACR_LOGIN_SERVER"
     
     - name: Deploy to App Service
       uses: azure/webapps-deploy@v2
       with:
         app-name: ${{ env.APP_NAME }}
-        images: ${{ env.ACR_SERVER }}/myapp:latest
-
-
+        images: ${{ env.ACR_LOGIN_SERVER }}/myapp:latest

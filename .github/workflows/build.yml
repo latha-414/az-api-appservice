@@ -1,38 +1,41 @@
-name: Deploy to App Service
+name: Build and Push Docker Image to ACR
 
 on:
-  workflow_run:
-    workflows: ["Build and Push Docker Image to ACR"]  # Match your build.yml name
-    types: [completed]
+  push:
+    branches:
+      - main
+      
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    
+      
     - name: Azure Login
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
-    
-    - name: Get App Service and ACR details dynamically
+        
+    - name: Get ACR details and Build/Push
       run: |
-        # Get App Service details (assuming you have one App Service in resource group)
-        APP_NAME=$(az webapp list --resource-group your-resource-group --query "[0].name" -o tsv)
-        ACR_LOGIN_SERVER=$(az acr list --resource-group your-resource-group --query "[0].loginServer" -o tsv)
+        # Dynamically get ACR details (assuming you have one ACR in resource group)
+        ACR_NAME=$(az acr list --resource-group rg-policytest-dev --query "[0].name" -o tsv)
+        ACR_LOGIN_SERVER=$(az acr list --resource-group rg-policytest-dev --query "[0].loginServer" -o tsv)
         
-        echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-        echo "ACR_LOGIN_SERVER=$ACR_LOGIN_SERVER" >> $GITHUB_ENV
+        echo "Using ACR: $ACR_NAME"
+        echo "Login Server: $ACR_LOGIN_SERVER"
         
-        echo "Deploying to App Service: $APP_NAME"
-        echo "Using image from: $ACR_LOGIN_SERVER"
-    
-    - name: Deploy to App Service
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: ${{ env.APP_NAME }}
-        images: ${{ env.ACR_LOGIN_SERVER }}/myapp:latest
+        # Login to ACR
+        az acr login --name $ACR_NAME
+        
+        # Build and push
+        docker build -t $ACR_LOGIN_SERVER/myapp:${{ github.sha }} .
+        docker build -t $ACR_LOGIN_SERVER/myapp:latest .
+        docker push $ACR_LOGIN_SERVER/myapp:${{ github.sha }}
+        docker push $ACR_LOGIN_SERVER/myapp:latest

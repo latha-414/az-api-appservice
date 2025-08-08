@@ -139,11 +139,12 @@ resource "azurerm_policy_definition" "location_restriction" {
 POLICY
 }
 
-resource "azurerm_policy_assignment" "location_restriction_assignment" {
+resource "azurerm_resource_group_policy_assignment" "location_restriction_assignment" {
   name                 = "allowed-locations-assignment"
-  scope                = azurerm_resource_group.main.id
+  resource_group_id    = azurerm_resource_group.main.id
   policy_definition_id = azurerm_policy_definition.location_restriction.id
 }
+
 
 resource "azurerm_storage_account" "example" {
   name                = "mystorageacct${random_string.suffix.result}"

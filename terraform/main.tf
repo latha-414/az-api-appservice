@@ -117,17 +117,11 @@ resource "azurerm_storage_account" "fail_test" {
   }
 }
 
-resource "random_string" "suffix" {
-  length  = 4
-  special = false
-  upper   = false
-}
-
 resource "azurerm_storage_account" "example" {
-  name                     = "mystorageacct${random_string.suffix.result}"
-  resource_group_name      = azurerm_resource_group.main.name
-  location                 = "East US"
-  account_tier             = "Standard"
+  name                = "mystorageacct${random_string.suffix.result}"
+  resource_group_name = azurerm_resource_group.main.name
+  location            = "East US"
+  account_tier        = "Standard"
   account_replication_type = "LRS"
 
   tags = {

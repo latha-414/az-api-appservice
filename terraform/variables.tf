@@ -12,3 +12,8 @@ variable "project_name" {
   description = "Project name"
   default     = "policytest"
 }
+
+variable "allowed_locations" {
+  description = "List of allowed Azure locations"
+  type        = list(string)
+}

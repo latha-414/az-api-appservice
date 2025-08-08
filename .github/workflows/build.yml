@@ -1,37 +1,41 @@
-name: Build and Push to ACR
+name: Build and Push Docker Image to ACR
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v4
-    
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
     - name: Azure Login
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
-      with:
-        terraform_version: 1.6.0  # Use your version
-    
-    - name: Get ACR details
+        
+    - name: Get ACR details and Build/Push
       run: |
-        cd terraform
-        echo "ACR_SERVER=$(terraform output -raw acr_login_server)" >> $GITHUB_ENV
-        echo "ACR_USERNAME=$(terraform output -raw acr_admin_username)" >> $GITHUB_ENV
-        echo "ACR_PASSWORD=$(terraform output -raw acr_admin_password)" >> $GITHUB_ENV
-
-
-    
-    - name: Build and Push Docker image
-      run: |
-        docker build -t $ACR_SERVER/myapp:latest .
-        echo $ACR_PASSWORD | docker login $ACR_SERVER -u $ACR_USERNAME --password-stdin
-        docker push $ACR_SERVER/myapp:latest
+        # Dynamically get ACR details (assuming you have one ACR in resource group)
+        ACR_NAME=$(az acr list --resource-group your-resource-group --query "[0].name" -o tsv)
+        ACR_LOGIN_SERVER=$(az acr list --resource-group your-resource-group --query "[0].loginServer" -o tsv)
+        
+        echo "Using ACR: $ACR_NAME"
+        echo "Login Server: $ACR_LOGIN_SERVER"
+        
+        # Login to ACR
+        az acr login --name $ACR_NAME
+        
+        # Build and push
+        docker build -t $ACR_LOGIN_SERVER/myapp:${{ github.sha }} .
+        docker build -t $ACR_LOGIN_SERVER/myapp:latest .
+        docker push $ACR_LOGIN_SERVER/myapp:${{ github.sha }}
+        docker push $ACR_LOGIN_SERVER/myapp:latest
